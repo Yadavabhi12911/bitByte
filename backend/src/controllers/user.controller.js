@@ -1,22 +1,16 @@
 import { User } from "../models/user.models.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from '../utils/ApiResponse.js';
+import generateToken from "../utils/jwt.js"
 
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 
 const register = asyncHandler(async (req, res) => {
 
-  const { name, password, email } = req.body
-
-  if (!name || !password || !email) {
-    throw new ApiError(400, "please provide all feilds")
-  }
+  const { name, password, email, phoneNumber } = req.body
 
   let existingUser = await User.findOne({ email })
-
-
-
 
   if (existingUser) {
     throw new ApiError(400, "user already exists")
@@ -25,7 +19,8 @@ const register = asyncHandler(async (req, res) => {
   let user = await User.create({
     name,
     email,
-    password
+    password,
+    phoneNumber
   })
 
   if (!user) {
@@ -40,5 +35,54 @@ const register = asyncHandler(async (req, res) => {
   )
 })
 
+const login = asyncHandler( async( req, res) => {
 
-export { register }
+  const {email, password} = req.body
+
+  const user = await User.findOne({email})
+
+  if(!user){
+    throw new ApiError(404, "user not found with this email id")
+  }
+
+  let isPassMatch = await user.isPasswordCorrect(password)
+  if(!isPassMatch){
+    throw new ApiError(400, "Wrong Credentials!!")
+  }
+
+  const options={
+    httpOnly:true,
+    secure:true,
+    maxAge: 1 * 60 * 1000
+  }
+  
+  let token = await generateToken(user._id)
+
+  
+
+  return res.status(200)
+  .cookie("myCookie", token, options)
+  .json(
+    new ApiResponse(200, {user}, "user logged in successfully")
+  )
+
+})
+
+const logout = asyncHandler(async (req, res) => {
+  const { id } = req.myUser;
+
+  const userLogout = await User.findByIdAndUpdate(
+    id,
+    { $inc: { tokenVersion: 1 } },
+    { new: true }
+  );
+
+  return res
+    .status(200)
+    .clearCookie("myCookie")
+    .json(new ApiResponse(200, { userLogout }, "User logged out successfully"));
+});
+
+
+
+export { register, login, logout }

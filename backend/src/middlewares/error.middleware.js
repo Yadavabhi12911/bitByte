@@ -3,8 +3,10 @@
 
 const error = (err, req, res, next) => {
 
-    err.message = message,
-    err.statusCode = statusCode || 500
+
+
+    err.message = err.message,
+    err.statusCode = err.statusCode || 500
 
     res.status(err.statusCode).json({
         success: false,
