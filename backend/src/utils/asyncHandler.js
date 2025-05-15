@@ -8,4 +8,4 @@ const asyncHandler = (handleRequest) => {
 
 
 
-export  {asyncHandler}
+export default asyncHandler

@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from '../utils/ApiResponse.js';
 import generateToken from "../utils/jwt.js"
 
-import { asyncHandler } from "../utils/asyncHandler.js"
+import  asyncHandler  from "../utils/asyncHandler.js"
 
 
 const register = asyncHandler(async (req, res) => {
